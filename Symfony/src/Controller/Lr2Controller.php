@@ -1,49 +1,112 @@
 <?php
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
 
-class ItemController extends AbstractController
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+
+class ItemController extends Controller
 {
-    private const ITEMS = []; // Приклад даних
+    private static $items = []; 
 
-    #[Route('/items', name: 'get_items', methods: [Request::METHOD_GET])]
-    public function getItems(): JsonResponse
+    public function index()
     {
-        return new JsonResponse(['data' => self::ITEMS], JsonResponse::HTTP_OK);
+        return response()->json(['data' => self::$items], Response::HTTP_OK);
     }
 
-    #[Route('/items/{id}', name: 'get_item', methods: [Request::METHOD_GET])]
-    public function getItem(string $id): JsonResponse
+    public function show(string $id)
     {
-        $item = $this->getItemById($id);
+        $item = $this->findItemById($id);
+        
         if (!$item) {
-            return new JsonResponse(
+            return response()->json(
                 ['error' => "Item not found with id $id"], 
-                JsonResponse::HTTP_NOT_FOUND
+                Response::HTTP_NOT_FOUND
             );
         }
-        return new JsonResponse(['data' => $item], JsonResponse::HTTP_OK);
+        
+        return response()->json(['data' => $item], Response::HTTP_OK);
     }
 
-    #[Route('/items', name: 'create_item', methods: [Request::METHOD_POST])]
-    public function createItem(Request $request): JsonResponse
+    public function store(Request $request)
     {
-        $data = json_decode($request->getContent(), true);
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'category' => 'required|string|max:100',
+            'value' => 'required|numeric'
+        ]);
+
         $newItem = [
-            'id' => random_int(1, 100),
-            'title' => $data['title'],
-            'category' => $data['category'],
-            'value' => $data['value']
+            'id' => uniqid(),
+            'title' => $validatedData['title'],
+            'category' => $validatedData['category'],
+            'value' => $validatedData['value']
         ];
-        return new JsonResponse(['data' => $newItem], JsonResponse::HTTP_CREATED);
+        
+        self::$items[] = $newItem;
+        
+        return response()->json(['data' => $newItem], Response::HTTP_CREATED);
     }
 
-    private function getItemById(string $id): ?array
+    public function update(Request $request, string $id)
     {
-        foreach (self::ITEMS as $item) {
-            if ($item['id'] == $id) {
+        $item = $this->findItemById($id);
+        
+        if (!$item) {
+            return response()->json(
+                ['error' => "Item not found with id $id"], 
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        $validatedData = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'category' => 'sometimes|string|max:100',
+            'value' => 'sometimes|numeric'
+        ]);
+
+        foreach ($validatedData as $key => $value) {
+            $item[$key] = $value;
+        }
+
+        foreach (self::$items as &$storedItem) {
+            if ($storedItem['id'] === $id) {
+                $storedItem = $item;
+                break;
+            }
+        }
+
+        return response()->json(['data' => $item], Response::HTTP_OK);
+    }
+
+    public function destroy(string $id)
+    {
+        $found = false;
+        
+        foreach (self::$items as $key => $item) {
+            if ($item['id'] === $id) {
+                unset(self::$items[$key]);
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            return response()->json(
+                ['error' => "Item not found with id $id"], 
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        self::$items = array_values(self::$items);
+        
+        return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    private function findItemById(string $id): ?array
+    {
+        foreach (self::$items as $item) {
+            if ($item['id'] === $id) {
                 return $item;
             }
         }
