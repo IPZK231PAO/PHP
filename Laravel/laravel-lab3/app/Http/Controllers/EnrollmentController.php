@@ -12,54 +12,35 @@ class EnrollmentController extends Controller
      */
     public function index()
     {
-        //
+        return Enrollment::with('student', 'course')->get();
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'course_id' => 'required|exists:courses,id',
+            'enrollment_date' => 'required|date',
+        ]);
+    
+        return Enrollment::create($request->all());
     }
-
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(Enrollment $enrollment)
     {
-        //
+        return $enrollment->load('student', 'course');
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Enrollment $enrollment)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, Enrollment $enrollment)
     {
-        //
+        $enrollment->update($request->all());
+        return $enrollment;
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(Enrollment $enrollment)
     {
-        //
+        $enrollment->delete();
+        return response()->json(null, 204);
     }
+    
 }
