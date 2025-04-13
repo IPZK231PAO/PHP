@@ -83,8 +83,19 @@ class StudentController extends AbstractController
     #[Route('/{id}/delete', name: 'student_delete', methods: ['DELETE'])]
     public function delete(Student $student, EntityManagerInterface $em): Response
     {
+        $grades = $em->getRepository(Grade::class)->findBy(['student' => $student]);
+        foreach ($grades as $grade) {
+            $em->remove($grade);
+        }
+        
+        $enrollments = $em->getRepository(Enrollment::class)->findBy(['student' => $student]);
+        foreach ($enrollments as $enrollment) {
+            $em->remove($enrollment);
+        }
+        
         $em->remove($student);
         $em->flush();
+        
         return $this->redirectToRoute('student_index');
     }
 }

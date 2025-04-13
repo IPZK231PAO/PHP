@@ -16,6 +16,7 @@
         .pagination-container { display: flex; justify-content: space-between; margin: 20px 0; }
         .per-page-selector { display: flex; align-items: center; gap: 10px; }
         #student-form { display: none; margin-top: 20px; }
+        .form-input { margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -30,35 +31,35 @@
         <form method="GET" action="{{ route('students.index') }}">
             <div class="filter-row">
                 <div class="filter-group">
-                    <label for="id">ID:</label>
-                    <input type="number" name="id" id="id" value="{{ request('id') }}" placeholder="Filter by ID">
+                    <label for="filter_id">ID:</label>
+                    <input type="number" name="id" id="filter_id" value="{{ request('id') }}" placeholder="Filter by ID">
                 </div>
                 
                 <div class="filter-group">
-                    <label for="first_name">First Name:</label>
-                    <input type="text" name="first_name" id="first_name" value="{{ request('first_name') }}" placeholder="Filter by first name">
+                    <label for="filter_first_name">First Name:</label>
+                    <input type="text" name="first_name" id="filter_first_name" value="{{ request('first_name') }}" placeholder="Filter by first name">
                 </div>
                 
                 <div class="filter-group">
-                    <label for="last_name">Last Name:</label>
-                    <input type="text" name="last_name" id="last_name" value="{{ request('last_name') }}" placeholder="Filter by last name">
+                    <label for="filter_last_name">Last Name:</label>
+                    <input type="text" name="last_name" id="filter_last_name" value="{{ request('last_name') }}" placeholder="Filter by last name">
                 </div>
             </div>
             
             <div class="filter-row">
                 <div class="filter-group">
-                    <label for="email">Email:</label>
-                    <input type="text" name="email" id="email" value="{{ request('email') }}" placeholder="Filter by email">
+                    <label for="filter_email">Email:</label>
+                    <input type="text" name="email" id="filter_email" value="{{ request('email') }}" placeholder="Filter by email">
                 </div>
                 
                 <div class="filter-group">
-                    <label for="date_of_birth">Date of Birth:</label>
-                    <input type="date" name="date_of_birth" id="date_of_birth" value="{{ request('date_of_birth') }}">
+                    <label for="filter_date_of_birth">Date of Birth:</label>
+                    <input type="date" name="date_of_birth" id="filter_date_of_birth" value="{{ request('date_of_birth') }}">
                 </div>
                 
                 <div class="filter-group">
-                    <label for="phone">Phone:</label>
-                    <input type="text" name="phone" id="phone" value="{{ request('phone') }}" placeholder="Filter by phone">
+                    <label for="filter_phone">Phone:</label>
+                    <input type="text" name="phone" id="filter_phone" value="{{ request('phone') }}" placeholder="Filter by phone">
                 </div>
             </div>
             
@@ -134,20 +135,30 @@
             <input type="hidden" name="_method" value="POST" id="method">
             <input type="hidden" name="student_id" id="student-id">
 
-            <label for="first_name">First Name:</label>
-            <input type="text" name="first_name" id="first_name" required><br><br>
+            <div class="form-input">
+                <label for="form_first_name">First Name:</label>
+                <input type="text" name="first_name" id="form_first_name" required>
+            </div>
 
-            <label for="last_name">Last Name:</label>
-            <input type="text" name="last_name" id="last_name" required><br><br>
+            <div class="form-input">
+                <label for="form_last_name">Last Name:</label>
+                <input type="text" name="last_name" id="form_last_name" required>
+            </div>
 
-            <label for="email">Email:</label>
-            <input type="email" name="email" id="email" required><br><br>
+            <div class="form-input">
+                <label for="form_email">Email:</label>
+                <input type="email" name="email" id="form_email" required>
+            </div>
 
-            <label for="date_of_birth">Date of Birth:</label>
-            <input type="date" name="date_of_birth" id="date_of_birth" required><br><br>
+            <div class="form-input">
+                <label for="form_date_of_birth">Date of Birth:</label>
+                <input type="date" name="date_of_birth" id="form_date_of_birth" required>
+            </div>
 
-            <label for="phone">Phone:</label>
-            <input type="text" name="phone" id="phone" required><br><br>
+            <div class="form-input">
+                <label for="form_phone">Phone:</label>
+                <input type="text" name="phone" id="form_phone" required>
+            </div>
 
             <button type="submit">Save</button>
             <button type="button" id="cancel-form-btn">Cancel</button>
@@ -161,11 +172,11 @@
             document.getElementById('student-form-action').action = '{{ route('students.store') }}';
             document.getElementById('method').value = 'POST';
             document.getElementById('student-id').value = '';
-            document.getElementById('first_name').value = '';
-            document.getElementById('last_name').value = '';
-            document.getElementById('email').value = '';
-            document.getElementById('date_of_birth').value = '';
-            document.getElementById('phone').value = '';
+            document.getElementById('form_first_name').value = '';
+            document.getElementById('form_last_name').value = '';
+            document.getElementById('form_email').value = '';
+            document.getElementById('form_date_of_birth').value = '';
+            document.getElementById('form_phone').value = '';
         });
 
         document.getElementById('cancel-form-btn').addEventListener('click', function() {
@@ -183,12 +194,13 @@
                         document.getElementById('student-form-action').action = `/students/${studentId}`;
                         document.getElementById('method').value = 'PUT';
                         document.getElementById('student-id').value = student.id;
-                        document.getElementById('first_name').value = student.first_name;
-                        document.getElementById('last_name').value = student.last_name;
-                        document.getElementById('email').value = student.email;
-                        document.getElementById('date_of_birth').value = student.date_of_birth;
-                        document.getElementById('phone').value = student.phone;
-                    });
+                        document.getElementById('form_first_name').value = student.first_name;
+                        document.getElementById('form_last_name').value = student.last_name;
+                        document.getElementById('form_email').value = student.email;
+                        document.getElementById('form_date_of_birth').value = student.date_of_birth;
+                        document.getElementById('form_phone').value = student.phone;
+                    })
+                    .catch(error => console.error('Error fetching student:', error));
             });
         });
 

@@ -102,8 +102,7 @@
                                         Edit
                                     </button>
                                     
-                                    <!-- Delete Button -->
-                                    <form method="POST" action="{{ path('teacher_delete', {'id': teacher.id}) }}" style="display:inline;">
+                                    <form method="DELETE" action="{{ path('teacher_delete', {'id': teacher.id}) }}" style="display:inline;">
                                         <input type="hidden" name="_method" value="DELETE">
                                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
                                             Delete
@@ -172,7 +171,7 @@
                     <h5 class="modal-title">Edit Teacher</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="POST" action="" id="editForm">
+                <form method="PUT" action="" id="editForm">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Name</label>
@@ -194,7 +193,7 @@
 </div>
 
 <script>
-    // Edit modal setup
+
     document.getElementById('editModal').addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
         document.getElementById('editForm').action = `/teacher/${button.dataset.id}/edit`;

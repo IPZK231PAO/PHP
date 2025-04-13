@@ -72,8 +72,13 @@ class StudentController extends Controller
 
     public function destroy(Student $student)
     {
+
+        $student->grades()->delete();
+        
         $student->enrollments()->delete();
+
         $student->delete();
+    
         return redirect()->route('students.index')->with('success', 'Student deleted successfully');
     }
 }
