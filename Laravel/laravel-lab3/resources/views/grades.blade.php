@@ -5,34 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grades Management</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid black;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-        .form-container {
-            margin: 20px 0;
-        }
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; }
+        table, th, td { border: 1px solid black; }
+        th, td { padding: 8px; text-align: left; }
+        .filter-container { background: #f5f5f5; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .filter-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px; }
+        .filter-group { flex: 1; min-width: 200px; }
+        .pagination-container { display: flex; justify-content: space-between; margin: 20px 0; }
+        .per-page-selector { display: flex; align-items: center; gap: 10px; }
+        #edit-grade-form { display: none; margin-top: 20px; }
     </style>
 </head>
 <body>
     <h1>Grades Management</h1>
 
-    <!-- Success Message -->
     @if(session('success'))
         <p style="color: green;">{{ session('success') }}</p>
     @endif
 
-    <!-- Create New Grade Form -->
+    <div class="filter-container">
+        <h3>Filter Grades</h3>
+        <form method="GET" action="{{ route('grades.index') }}">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="student_id">Student:</label>
+                    <select name="student_id" id="student_id">
+                        <option value="">All Students</option>
+                        @foreach($students as $student)
+                            <option value="{{ $student->id }}" {{ request('student_id') == $student->id ? 'selected' : '' }}>
+                                {{ $student->first_name }} {{ $student->last_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="course_id">Course:</label>
+                    <select name="course_id" id="course_id">
+                        <option value="">All Courses</option>
+                        @foreach($courses as $course)
+                            <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>
+                                {{ $course->title }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="lecturer_id">Lecturer:</label>
+                    <select name="lecturer_id" id="lecturer_id">
+                        <option value="">All Lecturers</option>
+                        @foreach($lecturers as $lecturer)
+                            <option value="{{ $lecturer->id }}" {{ request('lecturer_id') == $lecturer->id ? 'selected' : '' }}>
+                                {{ $lecturer->first_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="score_min">Min Score:</label>
+                    <input type="number" name="score_min" id="score_min" min="0" max="100" value="{{ request('score_min') }}">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="score_max">Max Score:</label>
+                    <input type="number" name="score_max" id="score_max" min="0" max="100" value="{{ request('score_max') }}">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="exam_date">Exam Date:</label>
+                    <input type="date" name="exam_date" id="exam_date" value="{{ request('exam_date') }}">
+                </div>
+            </div>
+            
+            <div class="filter-row">
+                <div class="filter-group">
+                    <button type="submit">Apply Filters</button>
+                    <a href="{{ route('grades.index') }}" style="margin-left: 10px;">Reset Filters</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="pagination-container">
+        <div>
+            Showing {{ $grades->firstItem() }} to {{ $grades->lastItem() }} of {{ $grades->total() }} entries
+        </div>
+        <div class="per-page-selector">
+            <span>Items per page:</span>
+            <select id="per-page-select" onchange="updateItemsPerPage(this.value)">
+                <option value="5" {{ request('per_page') == 5 ? 'selected' : '' }}>5</option>
+                <option value="10" {{ request('per_page') == 10 || !request('per_page') ? 'selected' : '' }}>10</option>
+                <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20</option>
+                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+            </select>
+        </div>
+    </div>
+
     <div class="form-container">
         <h3>Add New Grade</h3>
         <form action="{{ route('grades.store') }}" method="POST">
@@ -70,7 +143,6 @@
 
     <hr>
 
-    <!-- Display Grades Table -->
     <h2>All Grades</h2>
     <table>
         <thead>
@@ -92,13 +164,8 @@
                     <td>{{ $grade->score }}</td>
                     <td>{{ $grade->exam_date }}</td>
                     <td>
-                        <!-- Edit Button -->
                         <a href="#" class="edit-grade-btn" data-id="{{ $grade->id }}">Edit</a> |
-                        
-                        <!-- Delete Button -->
                         <a href="{{ route('grades.destroy', $grade->id) }}" onclick="event.preventDefault(); document.getElementById('delete-form-{{ $grade->id }}').submit();">Delete</a>
-                        
-                        <!-- Delete Form -->
                         <form id="delete-form-{{ $grade->id }}" action="{{ route('grades.destroy', $grade->id) }}" method="POST" style="display: none;">
                             @csrf
                             @method('DELETE')
@@ -109,7 +176,10 @@
         </tbody>
     </table>
 
-    <!-- Edit Grade Form (hidden initially) -->
+    <div style="margin-top: 20px;">
+        {{ $grades->appends(request()->query())->links() }}
+    </div>
+
     <div id="edit-grade-form" style="display: none;">
         <h3>Edit Grade</h3>
         <form id="edit-grade-action" method="POST">
@@ -151,12 +221,10 @@
     </div>
 
     <script>
-        // Show the Edit Grade Form
         document.querySelectorAll('.edit-grade-btn').forEach(function(button) {
             button.addEventListener('click', function() {
                 const gradeId = button.getAttribute('data-id');
                 
-                // Fetch grade data and populate the form for editing
                 fetch(`/grades/${gradeId}/edit`)
                     .then(response => response.json())
                     .then(grade => {
@@ -172,10 +240,15 @@
             });
         });
 
-        // Hide Edit Form
         document.getElementById('cancel-edit-btn').addEventListener('click', function() {
             document.getElementById('edit-grade-form').style.display = 'none';
         });
+
+        function updateItemsPerPage(value) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('per_page', value);
+            window.location.href = url.toString();
+        }
     </script>
 </body>
 </html>

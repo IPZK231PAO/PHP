@@ -12,10 +12,46 @@ use Symfony\Component\Routing\Annotation\Route;
 class StudentController extends AbstractController
 {
     #[Route('/', name: 'student_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
+        $queryBuilder = $em->getRepository(Student::class)->createQueryBuilder('s');
+        
+        if ($name = $request->query->get('name')) {
+            $queryBuilder->andWhere('s.name LIKE :name')
+                ->setParameter('name', '%'.$name.'%');
+        }
+        
+        if ($email = $request->query->get('email')) {
+            $queryBuilder->andWhere('s.email LIKE :email')
+                ->setParameter('email', '%'.$email.'%');
+        }
+
+        if ($phone = $request->query->get('phone')) {
+            $queryBuilder->andWhere('s.phone LIKE :phone')
+                ->setParameter('phone', '%'.$phone.'%');
+        }
+
+        $itemsPerPage = $request->query->getInt('itemsPerPage', 10);
+        $currentPage = $request->query->getInt('page', 1);
+        
+        $query = $queryBuilder->getQuery();
+        $totalItems = count($query->getResult());
+        $totalPages = ceil($totalItems / $itemsPerPage);
+        
+        $query->setFirstResult(($currentPage - 1) * $itemsPerPage)
+              ->setMaxResults($itemsPerPage);
+        
+        $students = $query->getResult();
+
         return $this->render('student/index.html.twig', [
-            'students' => $em->getRepository(Student::class)->findAll()
+            'students' => $students,
+            'currentPage' => $currentPage,
+            'totalPages' => $totalPages,
+            'totalItems' => $totalItems,
+            'itemsPerPage' => $itemsPerPage,
+            'nameFilter' => $request->query->get('name'),
+            'emailFilter' => $request->query->get('email'),
+            'phoneFilter' => $request->query->get('phone')
         ]);
     }
 

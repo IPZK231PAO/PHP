@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
 use App\Models\Result;
@@ -11,26 +10,40 @@ use Illuminate\Http\Request;
 
 class ResultController extends Controller
 {
-    // Відображення всіх результатів
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = $request->input('per_page', 10);
+        
+        $query = Result::query()->with(['student', 'course', 'lecturer']);
+
+        if ($request->has('student_id') && $request->student_id != '') {
+            $query->where('student_id', $request->student_id);
+        }
+
+        if ($request->has('course_id') && $request->course_id != '') {
+            $query->where('course_id', $request->course_id);
+        }
+
+        if ($request->has('lecturer_id') && $request->lecturer_id != '') {
+            $query->where('lecturer_id', $request->lecturer_id);
+        }
+
+        if ($request->has('score_min') && $request->score_min != '') {
+            $query->where('score', '>=', $request->score_min);
+        }
+
+        if ($request->has('score_max') && $request->score_max != '') {
+            $query->where('score', '<=', $request->score_max);
+        }
+
+        $results = $query->paginate($perPage);
         $students = Student::all();
         $courses = Course::all();
         $lecturers = Lecturer::all();
-        $results = Result::all();
-        return view('results', compact('results','students', 'courses', 'lecturers'));
+        
+        return view('results', compact('results', 'students', 'courses', 'lecturers'));
     }
 
-    // Створення нового результату
-    public function create()
-    {
-        $students = Student::all();
-        $courses = Course::all();
-        $lecturers = Lecturer::all();
-        return view('results.form', compact('students', 'courses', 'lecturers'));
-    }
-
-    // Збереження нового результату
     public function store(Request $request)
     {
         $request->validate([
@@ -44,23 +57,11 @@ class ResultController extends Controller
         return redirect()->route('results.index')->with('success', 'Result created successfully');
     }
 
-    // Показати результат
-    public function show(Result $result)
+    public function edit(Result $result)
     {
-        return view('results.show', compact('result'));
+        return response()->json($result);
     }
 
-
-
-       // В ResultController замінюємо show на edit для API:
-public function edit(Result $result)
-{
-    return response()->json($result);
-}
-
-
-
-    // Оновлення результату
     public function update(Request $request, Result $result)
     {
         $request->validate([
@@ -74,7 +75,6 @@ public function edit(Result $result)
         return redirect()->route('results.index')->with('success', 'Result updated successfully');
     }
 
-    // Видалення результату
     public function destroy(Result $result)
     {
         $result->delete();

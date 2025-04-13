@@ -14,16 +14,54 @@ use Symfony\Component\Routing\Annotation\Route;
 class GradeController extends AbstractController
 {
     #[Route('/', name: 'grade_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
+        $queryBuilder = $em->getRepository(Grade::class)->createQueryBuilder('g')
+            ->leftJoin('g.student', 's')
+            ->leftJoin('g.course', 'c');
+
+        if ($studentId = $request->query->get('student_id')) {
+            $queryBuilder->andWhere('g.student = :student')
+                ->setParameter('student', $studentId);
+        }
+        
+        if ($courseId = $request->query->get('course_id')) {
+            $queryBuilder->andWhere('g.course = :course')
+                ->setParameter('course', $courseId);
+        }
+        
+        if ($score = $request->query->get('score')) {
+            $queryBuilder->andWhere('g.score = :score')
+                ->setParameter('score', $score);
+        }
+
+        $itemsPerPage = $request->query->getInt('itemsPerPage', 10);
+        $currentPage = $request->query->getInt('page', 1);
+        
+        $query = $queryBuilder->getQuery();
+        $totalItems = count($query->getResult());
+        $totalPages = ceil($totalItems / $itemsPerPage);
+        
+        $query->setFirstResult(($currentPage - 1) * $itemsPerPage)
+              ->setMaxResults($itemsPerPage);
+        
+        $grades = $query->getResult();
+
         return $this->render('grade/index.html.twig', [
-            'grades' => $em->getRepository(Grade::class)->findAll(),
+            'grades' => $grades,
             'students' => $em->getRepository(Student::class)->findAll(),
-            'courses' => $em->getRepository(Course::class)->findAll()
+            'courses' => $em->getRepository(Course::class)->findAll(),
+            'currentPage' => $currentPage,
+            'totalPages' => $totalPages,
+            'totalItems' => $totalItems,
+            'itemsPerPage' => $itemsPerPage,
+            'studentFilter' => $request->query->get('student_id'),
+            'courseFilter' => $request->query->get('course_id'),
+            'scoreFilter' => $request->query->get('score')
         ]);
     }
 
-    #[Route('/new', name: 'grade_new', methods: ['POST'])]
+    #[Route('/new', name: 'grade_new', methods: ['PUT'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $grade = new Grade();
@@ -37,7 +75,7 @@ class GradeController extends AbstractController
         return $this->redirectToRoute('grade_index');
     }
 
-    #[Route('/{id}/edit', name: 'grade_edit', methods: ['PUT'])]
+    #[Route('/{id}/edit', name: 'grade_edit', methods: ['DELETE'])]
     public function edit(Request $request, Grade $grade, EntityManagerInterface $em): Response
     {
         $grade->setScore($request->request->get('score'));
@@ -46,7 +84,7 @@ class GradeController extends AbstractController
         return $this->redirectToRoute('grade_index');
     }
 
-    #[Route('/{id}/delete', name: 'grade_delete', methods: ['DELETE'])]
+    #[Route('/{id}/delete', name: 'grade_delete', methods: ['POST'])]
     public function delete(Grade $grade, EntityManagerInterface $em): Response
     {
         $em->remove($grade);

@@ -7,19 +7,42 @@ use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
-    // Вивести список всіх студентів
-    public function index()
+    public function index(Request $request)
     {
-        $students = Student::all();
+        $perPage = $request->input('per_page', 10);
+        
+        $query = Student::query();
+
+        if ($request->has('id') && $request->id != '') {
+            $query->where('id', $request->id);
+        }
+
+        if ($request->has('first_name') && $request->first_name != '') {
+            $query->where('first_name', 'like', '%'.$request->first_name.'%');
+        }
+
+        if ($request->has('last_name') && $request->last_name != '') {
+            $query->where('last_name', 'like', '%'.$request->last_name.'%');
+        }
+
+        if ($request->has('email') && $request->email != '') {
+            $query->where('email', 'like', '%'.$request->email.'%');
+        }
+
+        if ($request->has('date_of_birth') && $request->date_of_birth != '') {
+            $query->whereDate('date_of_birth', $request->date_of_birth);
+        }
+
+        if ($request->has('phone') && $request->phone != '') {
+            $query->where('phone', 'like', '%'.$request->phone.'%');
+        }
+
+        $students = $query->paginate($perPage);
         return view('students', compact('students'));
     }
 
-    // Зберегти нового студента
     public function store(Request $request)
     {
-        \Log::info('Received request:', $request->all()); // Логуємо запит
-
-        // Валідація
         $request->validate([
             'first_name' => 'required|string|max:50',
             'last_name' => 'required|string|max:50',
@@ -28,20 +51,15 @@ class StudentController extends Controller
             'phone' => 'required|string|max:20',
         ]);
 
-        // Створення нового студента
         Student::create($request->all());
-
-        // Перенаправлення на список студентів з повідомленням
         return redirect()->route('students.index')->with('success', 'Student created successfully');
     }
 
-    // Показати одного студента
     public function show(Student $student)
     {
         return $student->load('enrollments.course', 'grades');
     }
 
-    // Оновлення студента
     public function update(Request $request, Student $student)
     {
         $request->validate([
@@ -52,15 +70,10 @@ class StudentController extends Controller
         return redirect()->route('students.index')->with('success', 'Student updated successfully');
     }
 
-    // Видалити студента
     public function destroy(Student $student)
-{
-    // Видалити записи в таблиці enrollments, пов'язані з цим студентом
-    $student->enrollments()->delete();
-
-    // Тепер можна видалити студента
-    $student->delete();
-
-    return redirect()->route('students.index')->with('success', 'Student deleted successfully');
-}
+    {
+        $student->enrollments()->delete();
+        $student->delete();
+        return redirect()->route('students.index')->with('success', 'Student deleted successfully');
+    }
 }

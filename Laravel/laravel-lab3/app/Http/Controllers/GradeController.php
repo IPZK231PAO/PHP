@@ -10,10 +10,37 @@ use Illuminate\Http\Request;
 
 class GradeController extends Controller
 {
-    // Виведення всіх оцінок
-    public function index()
+    public function index(Request $request)
     {
-        $grades = Grade::all(); // Отримуємо всі оцінки
+        $perPage = $request->input('per_page', 10);
+        
+        $query = Grade::query()->with(['student', 'course', 'lecturer']);
+
+        if ($request->has('student_id') && $request->student_id != '') {
+            $query->where('student_id', $request->student_id);
+        }
+
+        if ($request->has('course_id') && $request->course_id != '') {
+            $query->where('course_id', $request->course_id);
+        }
+
+        if ($request->has('lecturer_id') && $request->lecturer_id != '') {
+            $query->where('lecturer_id', $request->lecturer_id);
+        }
+
+        if ($request->has('score_min') && $request->score_min != '') {
+            $query->where('score', '>=', $request->score_min);
+        }
+
+        if ($request->has('score_max') && $request->score_max != '') {
+            $query->where('score', '<=', $request->score_max);
+        }
+
+        if ($request->has('exam_date') && $request->exam_date != '') {
+            $query->whereDate('exam_date', $request->exam_date);
+        }
+
+        $grades = $query->paginate($perPage);
         $students = Student::all();
         $courses = Course::all();
         $lecturers = Lecturer::all();
@@ -21,17 +48,6 @@ class GradeController extends Controller
         return view('grades', compact('grades', 'students', 'courses', 'lecturers'));
     }
 
-    // Форма для додавання нової оцінки
-    public function create()
-    {
-        $students = Student::all();
-        $courses = Course::all();
-        $lecturers = Lecturer::all();
-
-        return view('grades.create', compact('students', 'courses', 'lecturers'));
-    }
-
-    // Збереження нової оцінки
     public function store(Request $request)
     {
         $request->validate([
@@ -46,13 +62,11 @@ class GradeController extends Controller
         return redirect()->route('grades.index')->with('success', 'Grade created successfully');
     }
 
-    // Отримання оцінки для редагування
     public function edit(Grade $grade)
     {
-        return response()->json($grade); // Повертаємо оцінку у форматі JSON
+        return response()->json($grade);
     }
 
-    // Оновлення оцінки
     public function update(Request $request, Grade $grade)
     {
         $request->validate([
@@ -67,7 +81,6 @@ class GradeController extends Controller
         return redirect()->route('grades.index')->with('success', 'Grade updated successfully');
     }
 
-    // Видалення оцінки
     public function destroy(Grade $grade)
     {
         $grade->delete();

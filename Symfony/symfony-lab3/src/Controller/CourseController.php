@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controller;
 
 use App\Entity\Course;
@@ -9,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+#[Route('/course')]
 class CourseController extends AbstractController
 {
     private $entityManager;
@@ -18,14 +18,45 @@ class CourseController extends AbstractController
         $this->entityManager = $entityManager;
     }
 
-    #[Route('/course', name: 'course_index', methods: ['GET'])]
-    public function index(): Response
+    #[Route('/', name: 'course_index', methods: ['GET'])]
+    public function index(Request $request): Response
     {
-        $courses = $this->entityManager->getRepository(Course::class)->findAll();
-        return $this->render('course/index.html.twig', ['courses' => $courses]);
+        $queryBuilder = $this->entityManager->getRepository(Course::class)->createQueryBuilder('c');
+        
+        if ($title = $request->query->get('title')) {
+            $queryBuilder->andWhere('c.title LIKE :title')
+                ->setParameter('title', '%'.$title.'%');
+        }
+        
+        if ($credits = $request->query->get('credits')) {
+            $queryBuilder->andWhere('c.credits = :credits')
+                ->setParameter('credits', $credits);
+        }
+
+        $itemsPerPage = $request->query->getInt('itemsPerPage', 10);
+        $currentPage = $request->query->getInt('page', 1);
+        
+        $query = $queryBuilder->getQuery();
+        $totalItems = count($query->getResult());
+        $totalPages = ceil($totalItems / $itemsPerPage);
+        
+        $query->setFirstResult(($currentPage - 1) * $itemsPerPage)
+              ->setMaxResults($itemsPerPage);
+        
+        $courses = $query->getResult();
+
+        return $this->render('course/index.html.twig', [
+            'courses' => $courses,
+            'currentPage' => $currentPage,
+            'totalPages' => $totalPages,
+            'totalItems' => $totalItems,
+            'itemsPerPage' => $itemsPerPage,
+            'titleFilter' => $request->query->get('title'),
+            'creditsFilter' => $request->query->get('credits')
+        ]);
     }
 
-    #[Route('/course/new', name: 'course_new', methods: ['POST'])]
+    #[Route('/new', name: 'course_new', methods: ['POST'])]
     public function new(Request $request): Response
     {
         $course = new Course();
@@ -38,7 +69,7 @@ class CourseController extends AbstractController
         return $this->redirectToRoute('course_index');
     }
 
-    #[Route('/course/{id}/edit', name: 'course_edit', methods: ['PUT'])]
+    #[Route('/{id}/edit', name: 'course_edit', methods: ['PUT'])]
     public function edit(Request $request, int $id): Response
     {
         $course = $this->entityManager->getRepository(Course::class)->find($id);
@@ -52,17 +83,17 @@ class CourseController extends AbstractController
         return $this->redirectToRoute('course_index');
     }
 
-    #[Route('/course/{id}/delete', name: 'course_delete', methods: ['DELETE'])]
-public function delete(int $id): Response
-{
-    $course = $this->entityManager->getRepository(Course::class)->find($id);
-    
-    if ($course) {
-        $this->entityManager->remove($course);
-        $this->entityManager->flush();
-        $this->addFlash('success', 'Course deleted successfully');
-    }
+    #[Route('/{id}/delete', name: 'course_delete', methods: ['DELETE'])]
+    public function delete(int $id): Response
+    {
+        $course = $this->entityManager->getRepository(Course::class)->find($id);
+        
+        if ($course) {
+            $this->entityManager->remove($course);
+            $this->entityManager->flush();
+            $this->addFlash('success', 'Course deleted successfully');
+        }
 
-    return $this->redirectToRoute('course_index');
-}
+        return $this->redirectToRoute('course_index');
+    }
 }

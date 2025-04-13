@@ -18,7 +18,10 @@
                         <select name="student_id" class="form-select" required>
                             <option value="">Select Student</option>
                             {% for student in students %}
-                                <option value="{{ student.id }}">{{ student.name }}</option>
+                                <option value="{{ student.id }}" 
+                                    {% if student.id == studentFilter %}selected{% endif %}>
+                                    {{ student.name }}
+                                </option>
                             {% endfor %}
                         </select>
                     </div>
@@ -26,12 +29,16 @@
                         <select name="course_id" class="form-select" required>
                             <option value="">Select Course</option>
                             {% for course in courses %}
-                                <option value="{{ course.id }}">{{ course.title }}</option>
+                                <option value="{{ course.id }}"
+                                    {% if course.id == courseFilter %}selected{% endif %}>
+                                    {{ course.title }}
+                                </option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <input type="number" name="score" class="form-control" placeholder="Score" min="0" max="100" required>
+                        <input type="number" name="score" class="form-control" 
+                               placeholder="Score" min="0" max="100" required>
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-success w-100">Add Grade</button>
@@ -41,59 +48,162 @@
         </div>
     </div>
 
-    <!-- Grades Table -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Filter Grades</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ path('grade_index') }}">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <select name="student_id" class="form-select">
+                            <option value="">All Students</option>
+                            {% for student in students %}
+                                <option value="{{ student.id }}"
+                                    {% if student.id == studentFilter %}selected{% endif %}>
+                                    {{ student.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="course_id" class="form-select">
+                            <option value="">All Courses</option>
+                            {% for course in courses %}
+                                <option value="{{ course.id }}"
+                                    {% if course.id == courseFilter %}selected{% endif %}>
+                                    {{ course.title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" name="score" class="form-control" 
+                               placeholder="Score" value="{{ scoreFilter }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <form method="GET" class="form-inline">
+                <select name="itemsPerPage" class="form-select" onchange="this.form.submit()">
+                    <option value="5" {% if itemsPerPage == 5 %}selected{% endif %}>5 per page</option>
+                    <option value="10" {% if itemsPerPage == 10 %}selected{% endif %}>10 per page</option>
+                    <option value="20" {% if itemsPerPage == 20 %}selected{% endif %}>20 per page</option>
+                </select>
+                <input type="hidden" name="student_id" value="{{ studentFilter }}">
+                <input type="hidden" name="course_id" value="{{ courseFilter }}">
+                <input type="hidden" name="score" value="{{ scoreFilter }}">
+            </form>
+        </div>
+        <div class="text-muted">
+            Page {{ currentPage }} of {{ totalPages }} ({{ totalItems }} total)
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">Grades List</h5>
         </div>
         <div class="card-body">
             {% if grades|length > 0 %}
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Student</th>
-                            <th>Course</th>
-                            <th>Score</th>
-                            <th class="text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for grade in grades %}
-                        <tr>
-                            <td>{{ grade.student.name }}</td>
-                            <td>{{ grade.course.title }}</td>
-                            <td>{{ grade.score }}</td>
-                            <td class="text-end">
-                                <!-- Edit Button -->
-                                <button class="btn btn-sm btn-warning me-2" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#editModal"
-                                        data-id="{{ grade.id }}"
-                                        data-score="{{ grade.score }}">
-                                    Edit
-                                </button>
-                                
-                                <!-- Delete Button -->
-                                <form method="DELETE" action="{{ path('grade_delete', {'id': grade.id}) }}" style="display:inline;">
-                                    <button type="submit" class="btn btn-sm btn-danger" 
-                                            onclick="return confirm('Are you sure you want to delete this grade?')">
-                                        Delete
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Student</th>
+                                <th>Course</th>
+                                <th>Score</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for grade in grades %}
+                            <tr>
+                                <td>{{ grade.student.name }}</td>
+                                <td>{{ grade.course.title }}</td>
+                                <td>{{ grade.score }}</td>
+                                <td class="text-end">
+                                    <!-- Edit Button -->
+                                    <button class="btn btn-sm btn-warning me-2" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editModal"
+                                            data-id="{{ grade.id }}"
+                                            data-score="{{ grade.score }}">
+                                        Edit
                                     </button>
-                                </form>
-                            </td>
-                        </tr>
+                                    
+                            
+                                    <form method="DELETE" action="{{ path('grade_delete', {'id': grade.id}) }}" style="display:inline;">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <button type="submit" class="btn btn-sm btn-danger" 
+                                                onclick="return confirm('Are you sure you want to delete this grade?')">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {% if currentPage == 1 %}disabled{% endif %}">
+                            <a class="page-link" 
+                               href="{{ path('grade_index', {
+                                   'page': currentPage - 1,
+                                   'itemsPerPage': itemsPerPage,
+                                   'student_id': studentFilter,
+                                   'course_id': courseFilter,
+                                   'score': scoreFilter
+                               }) }}">
+                                Previous
+                            </a>
+                        </li>
+                        
+                        {% for page in 1..totalPages %}
+                            <li class="page-item {% if page == currentPage %}active{% endif %}">
+                                <a class="page-link" 
+                                   href="{{ path('grade_index', {
+                                       'page': page,
+                                       'itemsPerPage': itemsPerPage,
+                                       'student_id': studentFilter,
+                                       'course_id': courseFilter,
+                                       'score': scoreFilter
+                                   }) }}">
+                                    {{ page }}
+                                </a>
+                            </li>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                        
+                        <li class="page-item {% if currentPage == totalPages %}disabled{% endif %}">
+                            <a class="page-link" 
+                               href="{{ path('grade_index', {
+                                   'page': currentPage + 1,
+                                   'itemsPerPage': itemsPerPage,
+                                   'student_id': studentFilter,
+                                   'course_id': courseFilter,
+                                   'score': scoreFilter
+                               }) }}">
+                                Next
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             {% else %}
-            <div class="alert alert-info">No grades found. Please add your first grade.</div>
+                <div class="alert alert-info">No grades found. Please add your first grade.</div>
             {% endif %}
         </div>
     </div>
 
-    <!-- Edit Modal -->
     <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -120,7 +230,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Edit modal setup
     document.getElementById('editModal').addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
         document.getElementById('editForm').action = `/grade/${button.dataset.id}/edit`;

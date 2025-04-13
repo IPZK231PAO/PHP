@@ -11,11 +11,45 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/teacher')]
 class TeacherController extends AbstractController
 {
-    #[Route('/', name: 'teacher_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
-    {
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $queryBuilder = $em->getRepository(Teacher::class)->createQueryBuilder('t');
+        
+        // Фільтрація
+        if ($name = $request->query->get('name')) {
+            $queryBuilder->andWhere('t.name LIKE :name')
+                ->setParameter('name', '%'.$name.'%');
+        }
+        
+        if ($department = $request->query->get('department')) {
+            $queryBuilder->andWhere('t.department LIKE :department')
+                ->setParameter('department', '%'.$department.'%');
+        }
+
+        // Пагінація
+        $itemsPerPage = $request->query->getInt('itemsPerPage', 10);
+        $currentPage = $request->query->getInt('page', 1);
+        
+        $query = $queryBuilder->getQuery();
+        $totalItems = count($query->getResult());
+        $totalPages = ceil($totalItems / $itemsPerPage);
+        
+        $query->setFirstResult(($currentPage - 1) * $itemsPerPage)
+              ->setMaxResults($itemsPerPage);
+        
+        $teachers = $query->getResult();
+
         return $this->render('teacher/index.html.twig', [
-            'teachers' => $em->getRepository(Teacher::class)->findAll()
+            'teachers' => $teachers,
+            'currentPage' => $currentPage,
+            'totalPages' => $totalPages,
+            'totalItems' => $totalItems,
+            'itemsPerPage' => $itemsPerPage,
+            'nameFilter' => $request->query->get('name'),
+            'departmentFilter' => $request->query->get('department')
         ]);
     }
 

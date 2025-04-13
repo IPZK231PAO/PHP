@@ -6,7 +6,6 @@
 <div class="container mt-4">
     <h1>Students Management</h1>
 
-    <!-- Add New Student Form -->
     <div class="card mb-4">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">Add New Student</h5>
@@ -31,61 +30,149 @@
         </div>
     </div>
 
-    <!-- Students Table -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Filter Students</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ path('student_index') }}">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" name="name" class="form-control" placeholder="Filter by name" 
+                               value="{{ nameFilter }}">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="email" name="email" class="form-control" placeholder="Filter by email"
+                               value="{{ emailFilter }}">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="tel" name="phone" class="form-control" placeholder="Filter by phone"
+                               value="{{ phoneFilter }}">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <form method="GET" class="form-inline">
+                <select name="itemsPerPage" class="form-select" onchange="this.form.submit()">
+                    <option value="5" {% if itemsPerPage == 5 %}selected{% endif %}>5 per page</option>
+                    <option value="10" {% if itemsPerPage == 10 %}selected{% endif %}>10 per page</option>
+                    <option value="20" {% if itemsPerPage == 20 %}selected{% endif %}>20 per page</option>
+                </select>
+                <input type="hidden" name="name" value="{{ nameFilter }}">
+                <input type="hidden" name="email" value="{{ emailFilter }}">
+                <input type="hidden" name="phone" value="{{ phoneFilter }}">
+            </form>
+        </div>
+        <div class="text-muted">
+            Page {{ currentPage }} of {{ totalPages }} ({{ totalItems }} total)
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">Students List</h5>
         </div>
         <div class="card-body">
             {% if students|length > 0 %}
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th class="text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for student in students %}
-                        <tr>
-                            <td>{{ student.name }}</td>
-                            <td>{{ student.email }}</td>
-                            <td>{{ student.phone }}</td>
-                            <td class="text-end">
-                                <!-- Edit Button -->
-                                <button class="btn btn-sm btn-warning me-2" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#editModal"
-                                        data-id="{{ student.id }}"
-                                        data-name="{{ student.name }}"
-                                        data-email="{{ student.email }}"
-                                        data-phone="{{ student.phone }}">
-                                    Edit
-                                </button>
-                                
-                                <!-- Delete Button -->
-                                <form method="DELETE" action="{{ path('student_delete', {'id': student.id}) }}" style="display:inline;">
-                                    <button type="submit" class="btn btn-sm btn-danger" 
-                                            onclick="return confirm('Are you sure you want to delete this student?')">
-                                        Delete
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student.name }}</td>
+                                <td>{{ student.email }}</td>
+                                <td>{{ student.phone }}</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-warning me-2" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editModal"
+                                            data-id="{{ student.id }}"
+                                            data-name="{{ student.name }}"
+                                            data-email="{{ student.email }}"
+                                            data-phone="{{ student.phone }}">
+                                        Edit
                                     </button>
-                                </form>
-                            </td>
-                        </tr>
+                                    
+                                    <form method="DELETE" action="{{ path('student_delete', {'id': student.id}) }}" style="display:inline;">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <button type="submit" class="btn btn-sm btn-danger" 
+                                                onclick="return confirm('Are you sure you want to delete this student?')">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Navigation -->
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {% if currentPage == 1 %}disabled{% endif %}">
+                            <a class="page-link" 
+                               href="{{ path('student_index', {
+                                   'page': currentPage - 1,
+                                   'itemsPerPage': itemsPerPage,
+                                   'name': nameFilter,
+                                   'email': emailFilter,
+                                   'phone': phoneFilter
+                               }) }}">
+                                Previous
+                            </a>
+                        </li>
+                        
+                        {% for page in 1..totalPages %}
+                            <li class="page-item {% if page == currentPage %}active{% endif %}">
+                                <a class="page-link" 
+                                   href="{{ path('student_index', {
+                                       'page': page,
+                                       'itemsPerPage': itemsPerPage,
+                                       'name': nameFilter,
+                                       'email': emailFilter,
+                                       'phone': phoneFilter
+                                   }) }}">
+                                    {{ page }}
+                                </a>
+                            </li>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                        
+                        <li class="page-item {% if currentPage == totalPages %}disabled{% endif %}">
+                            <a class="page-link" 
+                               href="{{ path('student_index', {
+                                   'page': currentPage + 1,
+                                   'itemsPerPage': itemsPerPage,
+                                   'name': nameFilter,
+                                   'email': emailFilter,
+                                   'phone': phoneFilter
+                               }) }}">
+                                Next
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             {% else %}
-            <div class="alert alert-info">No students found. Please add your first student.</div>
+                <div class="alert alert-info">No students found. Please add your first student.</div>
             {% endif %}
         </div>
     </div>
 
-    <!-- Edit Modal -->
     <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -120,7 +207,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Edit modal setup
     document.getElementById('editModal').addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
         document.getElementById('editForm').action = `/student/${button.dataset.id}/edit`;

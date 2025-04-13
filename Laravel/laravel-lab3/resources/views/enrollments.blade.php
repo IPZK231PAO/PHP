@@ -9,7 +9,12 @@
         table { width: 100%; border-collapse: collapse; }
         table, th, td { border: 1px solid black; }
         th, td { padding: 8px; text-align: left; }
-        #edit-enrollment-form { display: none; }
+        .filter-container { background: #f5f5f5; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .filter-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px; }
+        .filter-group { flex: 1; min-width: 200px; }
+        .pagination-container { display: flex; justify-content: space-between; margin: 20px 0; }
+        .per-page-selector { display: flex; align-items: center; gap: 10px; }
+        #edit-enrollment-form { display: none; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -19,7 +24,68 @@
         <p style="color: green;">{{ session('success') }}</p>
     @endif
 
-    <h2>All Enrollments</h2>
+    <div class="filter-container">
+        <h3>Filter Enrollments</h3>
+        <form method="GET" action="{{ route('enrollments.index') }}">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="id">ID:</label>
+                    <input type="number" name="id" id="id" value="{{ request('id') }}" placeholder="Filter by ID">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="student_id">Student:</label>
+                    <select name="student_id" id="student_id">
+                        <option value="">All Students</option>
+                        @foreach($students as $student)
+                            <option value="{{ $student->id }}" {{ request('student_id') == $student->id ? 'selected' : '' }}>
+                                {{ $student->first_name }} {{ $student->last_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="course_id">Course:</label>
+                    <select name="course_id" id="course_id">
+                        <option value="">All Courses</option>
+                        @foreach($courses as $course)
+                            <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>
+                                {{ $course->title }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="enrollment_date">Enrollment Date:</label>
+                    <input type="date" name="enrollment_date" id="enrollment_date" value="{{ request('enrollment_date') }}">
+                </div>
+                
+                <div class="filter-group">
+                    <button type="submit">Apply Filters</button>
+                    <a href="{{ route('enrollments.index') }}" style="margin-left: 10px;">Reset Filters</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="pagination-container">
+        <div>
+            Showing {{ $enrollments->firstItem() }} to {{ $enrollments->lastItem() }} of {{ $enrollments->total() }} entries
+        </div>
+        <div class="per-page-selector">
+            <span>Items per page:</span>
+            <select id="per-page-select" onchange="updateItemsPerPage(this.value)">
+                <option value="5" {{ request('per_page') == 5 ? 'selected' : '' }}>5</option>
+                <option value="10" {{ request('per_page') == 10 || !request('per_page') ? 'selected' : '' }}>10</option>
+                <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20</option>
+                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+            </select>
+        </div>
+    </div>
 
     <table>
         <thead>
@@ -51,7 +117,10 @@
         </tbody>
     </table>
 
-    <!-- Add New Enrollment Form -->
+    <div style="margin-top: 20px;">
+        {{ $enrollments->appends(request()->query())->links() }}
+    </div>
+
     <form id="add-enrollment-form" method="POST" action="{{ route('enrollments.store') }}">
         @csrf
         <label for="student_id">Student:</label>
@@ -75,7 +144,6 @@
         <button type="button" id="cancel-form-btn">Cancel</button>
     </form>
 
-    <!-- Edit Enrollment Form -->
     <form id="edit-enrollment-form" method="POST" action="" style="display:none;">
         @csrf
         @method('PUT')
@@ -115,7 +183,6 @@
                         document.getElementById('edit_student_id').value = data.student_id;
                         document.getElementById('edit_course_id').value = data.course_id;
                         document.getElementById('edit_enrollment_date').value = data.enrollment_date;
-
                         document.getElementById('edit-enrollment-form').action = `/enrollments/${data.id}`;
                     });
             });
@@ -128,6 +195,12 @@
         document.getElementById('cancel-form-btn').addEventListener('click', function() {
             document.getElementById('add-enrollment-form').reset();
         });
+
+        function updateItemsPerPage(value) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('per_page', value);
+            window.location.href = url.toString();
+        }
     </script>
 </body>
 </html>
