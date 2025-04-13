@@ -27,12 +27,11 @@
 <body>
     <h1>Courses Management</h1>
 
-    <!-- Success Message -->
     @if(session('success'))
         <p style="color: green;">{{ session('success') }}</p>
     @endif
 
-    <!-- Create New Course Form -->
+
     <div class="form-container">
         <h3>Add New Course</h3>
         <form action="{{ route('courses.store') }}" method="POST">
@@ -65,7 +64,6 @@
 
     <hr>
 
-    <!-- Display Courses Table -->
     <h2>All Courses</h2>
     <table>
         <thead>
@@ -111,8 +109,7 @@
         </tbody>
     </table>
 
-    <!-- Edit Course Form (hidden initially) -->
-    <!-- Edit Course Form (додано description, start_date, end_date) -->
+
 <div id="edit-course-form" style="display: none; margin-top: 30px;">
     <h3>Edit Course</h3>
     <form id="edit-course-action" method="POST">

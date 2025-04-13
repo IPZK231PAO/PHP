@@ -151,12 +151,12 @@
     </div>
 
     <script>
-        // Show the Edit Grade Form
+
         document.querySelectorAll('.edit-grade-btn').forEach(function(button) {
             button.addEventListener('click', function() {
                 const gradeId = button.getAttribute('data-id');
                 
-                // Fetch grade data and populate the form for editing
+      
                 fetch(`/grades/${gradeId}/edit`)
                     .then(response => response.json())
                     .then(grade => {

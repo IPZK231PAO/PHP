@@ -28,12 +28,10 @@
 <body>
     <h1>Result Management</h1>
 
-    <!-- Success Message -->
     @if(session('success'))
         <p style="color: green;">{{ session('success') }}</p>
     @endif
 
-    <!-- Display Result Table -->
     <h2>All Results</h2>
     <a href="#" id="add-result-form-btn">Add Result</a>
 
@@ -67,7 +65,6 @@
         </tbody>
     </table>
 
-    <!-- Add/Edit Result Form -->
     <div id="result-form" style="display:none;">
         <h2 id="form-title">Add New Result</h2>
         <form id="result-form-action" method="POST">
@@ -105,7 +102,7 @@
     </div>
 
     <script>
-        // Show the Add/Edit Result Form
+   
         document.getElementById('add-result-form-btn').addEventListener('click', function() {
             document.getElementById('result-form').style.display = 'block';
             document.getElementById('form-title').innerText = 'Add New Result';
@@ -118,24 +115,22 @@
             document.getElementById('score').value = '';
         });
 
-        // Cancel the Add/Edit Form
         document.getElementById('cancel-form-btn').addEventListener('click', function() {
             document.getElementById('result-form').style.display = 'none';
         });
 
-        // Show the Edit Form
-       // Показати форму редагування
+
 const editButtons = document.querySelectorAll('.edit-result-btn');
 editButtons.forEach(function(button) {
     button.addEventListener('click', function() {
         const resultId = button.getAttribute('data-id');
-        fetch(`/results/${resultId}/edit`)  // Викликаємо API для отримання даних
+        fetch(`/results/${resultId}/edit`)  
             .then(response => response.json())
             .then(result => {
                 document.getElementById('result-form').style.display = 'block';
                 document.getElementById('form-title').innerText = 'Edit Result';
-                document.getElementById('result-form-action').action = `/results/${resultId}`;  // Оновлюємо дію форми
-                document.getElementById('method').value = 'PUT';  // Метод PUT для оновлення
+                document.getElementById('result-form-action').action = `/results/${resultId}`;  
+                document.getElementById('method').value = 'PUT';  
                 document.getElementById('result-id').value = result.id;
                 document.getElementById('student_id').value = result.student_id;
                 document.getElementById('course_id').value = result.course_id;

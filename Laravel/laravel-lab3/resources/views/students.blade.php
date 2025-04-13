@@ -27,12 +27,10 @@
 <body>
     <h1>Students Management</h1>
 
-    <!-- Success Message -->
     @if(session('success'))
         <p class="success-msg">{{ session('success') }}</p>
     @endif
 
-    <!-- Display Students Table -->
     <h2>All Students</h2>
     <a href="#" id="add-student-form-btn">Add Student</a>
 
@@ -66,7 +64,6 @@
         </tbody>
     </table>
 
-    <!-- Add/Edit Student Form -->
     <div id="student-form" style="display:none;">
         <h2 id="form-title">Add New Student</h2>
         <form id="student-form-action" method="POST" action="{{ route('students.store') }}">
@@ -95,7 +92,7 @@
     </div>
 
     <script>
-        // Show the Add/Edit Student Form
+    
         document.getElementById('add-student-form-btn').addEventListener('click', function() {
             document.getElementById('student-form').style.display = 'block';
             document.getElementById('form-title').innerText = 'Add New Student';
@@ -109,12 +106,12 @@
             document.getElementById('phone').value = '';
         });
 
-        // Cancel the Add/Edit Form
+
         document.getElementById('cancel-form-btn').addEventListener('click', function() {
             document.getElementById('student-form').style.display = 'none';
         });
 
-        // Show the Edit Form
+
         const editButtons = document.querySelectorAll('.edit-student-btn');
         editButtons.forEach(function(button) {
             button.addEventListener('click', function() {

@@ -28,12 +28,10 @@
 <body>
     <h1>Lecturer Management</h1>
 
-    <!-- Success Message -->
     @if(session('success'))
         <p style="color: green;">{{ session('success') }}</p>
     @endif
 
-    <!-- Display Lecturer Table -->
     <h2>All Lecturers</h2>
     <a href="#" id="add-lecturer-form-btn">Add Lecturer</a>
 
@@ -69,7 +67,6 @@
         </tbody>
     </table>
 
-    <!-- Add/Edit Lecturer Form -->
     <div id="lecturer-form" style="display:none;">
         <h2 id="form-title">Add New Lecturer</h2>
         <form id="lecturer-form-action" method="POST">
@@ -95,25 +92,23 @@
     </div>
 
     <script>
-        // Show the Add/Edit Lecturer Form
+
         document.getElementById('add-lecturer-form-btn').addEventListener('click', function() {
      document.getElementById('lecturer-form').style.display = 'block';
      document.getElementById('form-title').innerText = 'Add New Lecturer';
-     document.getElementById('lecturer-form-action').action = '{{ route('lecturers.store') }}';  // Важливо, щоб тут був правильний маршрут
-     document.getElementById('method').value = 'POST';  // Встановлює метод POST
-     document.getElementById('lecturer-id').value = '';  // Очищає старі дані
+     document.getElementById('lecturer-form-action').action = '{{ route('lecturers.store') }}';  /
+     document.getElementById('method').value = 'POST';  
+     document.getElementById('lecturer-id').value = ''; 
      document.getElementById('first_name').value = '';
      document.getElementById('last_name').value = '';
      document.getElementById('email').value = '';
      document.getElementById('department').value = '';
 });
 
-        // Cancel the Add/Edit Form
         document.getElementById('cancel-form-btn').addEventListener('click', function() {
             document.getElementById('lecturer-form').style.display = 'none';
         });
 
-        // Show the Edit Form
         const editButtons = document.querySelectorAll('.edit-lecturer-btn');
         editButtons.forEach(function(button) {
             button.addEventListener('click', function() {

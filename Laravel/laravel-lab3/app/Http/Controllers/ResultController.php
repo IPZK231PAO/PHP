@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 
 class ResultController extends Controller
 {
-    // Відображення всіх результатів
     public function index()
     {
         $students = Student::all();
@@ -21,7 +20,6 @@ class ResultController extends Controller
         return view('results', compact('results','students', 'courses', 'lecturers'));
     }
 
-    // Створення нового результату
     public function create()
     {
         $students = Student::all();
@@ -30,7 +28,6 @@ class ResultController extends Controller
         return view('results.form', compact('students', 'courses', 'lecturers'));
     }
 
-    // Збереження нового результату
     public function store(Request $request)
     {
         $request->validate([
@@ -44,7 +41,7 @@ class ResultController extends Controller
         return redirect()->route('results.index')->with('success', 'Result created successfully');
     }
 
-    // Показати результат
+
     public function show(Result $result)
     {
         return view('results.show', compact('result'));
@@ -52,7 +49,6 @@ class ResultController extends Controller
 
 
 
-       // В ResultController замінюємо show на edit для API:
 public function edit(Result $result)
 {
     return response()->json($result);

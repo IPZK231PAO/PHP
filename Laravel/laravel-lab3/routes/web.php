@@ -16,5 +16,3 @@ Route::resource('enrollments', EnrollmentController::class);
 Route::resource('grades', GradeController::class);
 Route::resource('results', ResultController::class);
 Route::resource('lecturers', LecturerController::class);
-// Results by course
-Route::get('results/course/{course}', [ResultController::class, 'byCourse'])->name('results.by_course');

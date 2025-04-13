@@ -10,10 +10,10 @@ use Illuminate\Http\Request;
 
 class GradeController extends Controller
 {
-    // Виведення всіх оцінок
+    
     public function index()
     {
-        $grades = Grade::all(); // Отримуємо всі оцінки
+        $grades = Grade::all(); 
         $students = Student::all();
         $courses = Course::all();
         $lecturers = Lecturer::all();
@@ -21,7 +21,7 @@ class GradeController extends Controller
         return view('grades', compact('grades', 'students', 'courses', 'lecturers'));
     }
 
-    // Форма для додавання нової оцінки
+
     public function create()
     {
         $students = Student::all();
@@ -31,7 +31,7 @@ class GradeController extends Controller
         return view('grades.create', compact('students', 'courses', 'lecturers'));
     }
 
-    // Збереження нової оцінки
+ 
     public function store(Request $request)
     {
         $request->validate([
@@ -46,13 +46,13 @@ class GradeController extends Controller
         return redirect()->route('grades.index')->with('success', 'Grade created successfully');
     }
 
-    // Отримання оцінки для редагування
+  
     public function edit(Grade $grade)
     {
-        return response()->json($grade); // Повертаємо оцінку у форматі JSON
+        return response()->json($grade); 
     }
 
-    // Оновлення оцінки
+   
     public function update(Request $request, Grade $grade)
     {
         $request->validate([
@@ -67,7 +67,7 @@ class GradeController extends Controller
         return redirect()->route('grades.index')->with('success', 'Grade updated successfully');
     }
 
-    // Видалення оцінки
+   
     public function destroy(Grade $grade)
     {
         $grade->delete();
