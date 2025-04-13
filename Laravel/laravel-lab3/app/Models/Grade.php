@@ -2,10 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 class Grade extends Model
+
+
 {
+    use HasFactory;
+    protected $fillable = [
+    'student_id',
+    'course_id',
+    'lecturer_id',
+    'score',
+    'exam_date',
+];
     public function up()
     {
         Schema::create('grades', function (Blueprint $table) {

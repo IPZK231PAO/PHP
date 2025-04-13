@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Student extends Model
-{
+{protected $fillable = [
+    'first_name', 'last_name', 'email', 'date_of_birth', 'phone',
+];
     public function up()
     {
         Schema::create('students', function (Blueprint $table) {

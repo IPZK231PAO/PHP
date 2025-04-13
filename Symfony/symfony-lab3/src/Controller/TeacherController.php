@@ -4,47 +4,49 @@ namespace App\Controller;
 use App\Entity\Teacher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/teacher')]
 class TeacherController extends AbstractController
 {
     #[Route('/', name: 'teacher_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): JsonResponse
+    public function index(EntityManagerInterface $em): Response
     {
-        $teachers = $em->getRepository(Teacher::class)->findAll();
-        return $this->json($teachers);
+        return $this->render('teacher/index.html.twig', [
+            'teachers' => $em->getRepository(Teacher::class)->findAll()
+        ]);
     }
 
-    #[Route('/', name: 'teacher_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em): JsonResponse
+    #[Route('/new', name: 'teacher_new', methods: ['POST'])]
+    public function new(Request $request, EntityManagerInterface $em): Response
     {
-        $data = json_decode($request->getContent(), true);
         $teacher = new Teacher();
-        $teacher->setName($data['name']);
-        $teacher->setDepartment($data['department']);
+        $teacher->setName($request->request->get('name'));
+        $teacher->setDepartment($request->request->get('department'));
+
         $em->persist($teacher);
         $em->flush();
-        return $this->json($teacher, 201);
+
+        return $this->redirectToRoute('teacher_index');
     }
 
-    #[Route('/{id}', name: 'teacher_update', methods: ['PUT'])]
-    public function update(Request $request, Teacher $teacher, EntityManagerInterface $em): JsonResponse
+    #[Route('/{id}/edit', name: 'teacher_edit', methods: ['PUT'])]
+    public function edit(Request $request, Teacher $teacher, EntityManagerInterface $em): Response
     {
-        $data = json_decode($request->getContent(), true);
-        $teacher->setName($data['name'] ?? $teacher->getName());
-        $teacher->setDepartment($data['department'] ?? $teacher->getDepartment());
+        $teacher->setName($request->request->get('name'));
+        $teacher->setDepartment($request->request->get('department'));
         $em->flush();
-        return $this->json($teacher);
+
+        return $this->redirectToRoute('teacher_index');
     }
 
-    #[Route('/{id}', name: 'teacher_delete', methods: ['DELETE'])]
-    public function delete(Teacher $teacher, EntityManagerInterface $em): JsonResponse
+    #[Route('/{id}/delete', name: 'teacher_delete', methods: ['DELETE'])]
+    public function delete(Teacher $teacher, EntityManagerInterface $em): Response
     {
         $em->remove($teacher);
         $em->flush();
-        return $this->json(null, 204);
+        return $this->redirectToRoute('teacher_index');
     }
 }

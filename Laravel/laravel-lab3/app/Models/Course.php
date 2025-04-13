@@ -5,7 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Course extends Model
-{
+{protected $fillable = [
+    'title', 
+    'description', 
+    'credits', 
+    'start_date', 
+    'end_date', 
+    'lecturer_id' 
+];
     public function up()
     {
         Schema::create('courses', function (Blueprint $table) {
@@ -23,10 +30,12 @@ class Course extends Model
         return $this->hasMany(Enrollment::class);
     }
 
-    public function grades()
-    {
-        return $this->hasMany(Grade::class);
-    }
+   // Модель Course
+        public function grades()
+        {
+            return $this->hasMany(Grade::class, 'course_id'); // зв'язок з таблицею grades
+        }
+
 
     public function lecturer()
     {

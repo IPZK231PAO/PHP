@@ -3,18 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Enrollment;
+use App\Models\Student;
+use App\Models\Course;
 use Illuminate\Http\Request;
 
 class EnrollmentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        return Enrollment::with('student', 'course')->get();
+        $enrollments = Enrollment::all();
+        $students = Student::all();
+        $courses = Course::all();
+        return view('enrollments', compact('enrollments', 'students', 'courses')); 
     }
-    
+
     public function store(Request $request)
     {
         $request->validate([
@@ -22,25 +24,31 @@ class EnrollmentController extends Controller
             'course_id' => 'required|exists:courses,id',
             'enrollment_date' => 'required|date',
         ]);
-    
-        return Enrollment::create($request->all());
+
+        Enrollment::create($request->all());
+        return redirect()->route('enrollments.index')->with('success', 'Enrollment created successfully');
     }
-    
-    public function show(Enrollment $enrollment)
+
+    public function edit(Enrollment $enrollment)
     {
-        return $enrollment->load('student', 'course');
+        return response()->json($enrollment);
     }
-    
+
     public function update(Request $request, Enrollment $enrollment)
     {
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'course_id' => 'required|exists:courses,id',
+            'enrollment_date' => 'required|date',
+        ]);
+
         $enrollment->update($request->all());
-        return $enrollment;
+        return redirect()->route('enrollments.index')->with('success', 'Enrollment updated successfully');
     }
-    
+
     public function destroy(Enrollment $enrollment)
     {
         $enrollment->delete();
-        return response()->json(null, 204);
+        return redirect()->route('enrollments.index')->with('success', 'Enrollment deleted successfully');
     }
-    
 }

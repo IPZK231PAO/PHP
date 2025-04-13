@@ -15,8 +15,13 @@ return new class extends Migration
             $table->integer('credits');
             $table->date('start_date');
             $table->date('end_date');
+            $table->foreignId('lecturer_id')->constrained()->onDelete('cascade'); // Додаємо колонку lecturer_id
             $table->timestamps();
         });
     }
-    
+
+    public function down(): void
+    {
+        Schema::dropIfExists('courses');
+    }
 };
