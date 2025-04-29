@@ -1,0 +1,65 @@
+# config/packages/security.yaml
+security:
+    password_hashers:
+        App\Entity\User:
+            algorithm: auto
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            pattern: ^/
+            provider: app_user_provider
+
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                default_target_path: app_home
+                username_parameter: email
+                password_parameter: password
+            logout:
+                path:   app_logout
+                target: app_login
+            security: true
+
+    
+    access_control:
+        # PUBLIC
+        - { path: ^/login$,    roles: PUBLIC_ACCESS }
+        - { path: ^/register$, roles: PUBLIC_ACCESS }
+
+        # CLIENT may only GET any “/student”, “/course”, etc.
+        - { path: ^/student,   roles: ROLE_CLIENT,   methods: [GET] }
+        - { path: ^/course,    roles: ROLE_CLIENT,   methods: [GET] }
+        - { path: ^/enrollment,roles: ROLE_CLIENT,   methods: [GET] }
+        - { path: ^/grade,     roles: ROLE_CLIENT,   methods: [GET] }
+        - { path: ^/result,    roles: ROLE_CLIENT,   methods: [GET] }
+        - { path: ^/lecturer,  roles: ROLE_CLIENT,   methods: [GET] }
+
+        # MANAGER can create/update but not delete
+        - { path: ^/student,   roles: ROLE_MANAGER,  methods: [POST,PUT,PATCH] }
+        - { path: ^/course,    roles: ROLE_MANAGER,  methods: [POST,PUT,PATCH] }
+        - { path: ^/enrollment,roles: ROLE_MANAGER,  methods: [POST,PUT,PATCH] }
+        - { path: ^/grade,     roles: ROLE_MANAGER,  methods: [POST,PUT,PATCH] }
+        - { path: ^/result,    roles: ROLE_MANAGER,  methods: [POST,PUT,PATCH] }
+        - { path: ^/lecturer,  roles: ROLE_MANAGER,  methods: [POST,PUT,PATCH] }
+
+        # ADMIN may DELETE
+        - { path: ^/student,   roles: ROLE_ADMIN,    methods: [DELETE] }
+        - { path: ^/course,    roles: ROLE_ADMIN,    methods: [DELETE] }
+        - { path: ^/enrollment,roles: ROLE_ADMIN,    methods: [DELETE] }
+        - { path: ^/grade,     roles: ROLE_ADMIN,    methods: [DELETE] }
+        - { path: ^/result,    roles: ROLE_ADMIN,    methods: [DELETE] }
+        - { path: ^/lecturer,  roles: ROLE_ADMIN,    methods: [DELETE] }
+
+        # anything else under “/” requires at least logged-in
+        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }

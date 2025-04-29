@@ -1,0 +1,124 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+student_index:
+    path: /student
+    controller: App\Controller\StudentController::index
+    methods: GET
+
+student_create:
+    path: /student
+    controller: App\Controller\StudentController::create
+    methods: POST
+
+student_update:
+    path: /student/{id}
+    controller: App\Controller\StudentController::update
+    methods: PUT
+
+student_delete:
+    path: /student/{id}
+    controller: App\Controller\StudentController::delete
+    methods: DELETE
+
+course_index:
+    path: /course
+    controller: App\Controller\CourseController::index
+    methods: GET
+
+course_create:
+    path: /course
+    controller: App\Controller\CourseController::create
+    methods: POST
+
+course_update:
+    path: /course/{id}
+    controller: App\Controller\CourseController::update
+    methods: PUT
+
+course_delete:
+    path: /course/{id}
+    controller: App\Controller\CourseController::delete
+    methods: DELETE
+
+teacher_index:
+    path: /teacher
+    controller: App\Controller\TeacherController::index
+    methods: GET
+
+teacher_create:
+    path: /teacher
+    controller: App\Controller\TeacherController::create
+    methods: POST
+
+teacher_update:
+    path: /teacher/{id}
+    controller: App\Controller\TeacherController::update
+    methods: PUT
+
+teacher_delete:
+    path: /teacher/{id}
+    controller: App\Controller\TeacherController::delete
+    methods: DELETE
+
+grade_index:
+    path: /grade
+    controller: App\Controller\GradeController::index
+    methods: GET
+
+grade_create:
+    path: /grade
+    controller: App\Controller\GradeController::create
+    methods: POST
+
+grade_update:
+    path: /grade/{id}
+    controller: App\Controller\GradeController::update
+    methods: PUT
+
+grade_delete:
+    path: /grade/{id}
+    controller: App\Controller\GradeController::delete
+    methods: DELETE
+
+enrollment_index:
+    path: /enrollment
+    controller: App\Controller\EnrollmentController::index
+    methods: GET
+
+enrollment_create:
+    path: /enrollment
+    controller: App\Controller\EnrollmentController::create
+    methods: POST
+
+enrollment_update:
+    path: /enrollment/{id}
+    controller: App\Controller\EnrollmentController::update
+    methods: PUT
+
+enrollment_delete:
+    path: /enrollment/{id}
+    controller: App\Controller\EnrollmentController::delete
+    methods: DELETE
+app_login:
+    path: /login
+    controller: App\Controller\AuthController::login
+    methods: [GET, POST]
+
+app_register:
+    path: /register
+    controller: App\Controller\AuthController::register
+    methods: [GET, POST]
+
+app_profile:
+    path: /profile
+    controller: App\Controller\AuthController::profile
+    methods: [GET]
+
+app_logout:
+    path: /logout
+app_home:
+    path: /
+    controller: App\Controller\HomeController::index
